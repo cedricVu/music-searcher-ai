@@ -67,14 +67,14 @@ async function submitToBackendAPI(audioBlob) {
 
     try {
         // Convert the Blob to a File object with a proper name and type
-        const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+        const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
         // Prepare the form data
         const formData = new FormData();
         formData.append('file', audioFile);
 
         // Send the audio file to the backend API
-        const response = await fetch('https://api.sformer.tech/api/detect-song', {
+        const response = await fetch('http://localhost:8080/api/detect-song', {
             method: 'POST',
             body: formData,
         });
@@ -100,8 +100,8 @@ function clearSearchResults() {
 }
 
 function updateSearchResults(result) {
-    if (result && result.length) {
-        for (const item of result) {
+    if (result && result.vids?.length) {
+        for (const item of result.vids) {
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = `https://youtube.com/watch?v=${item.id.videoId}`;
