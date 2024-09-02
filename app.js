@@ -30,7 +30,7 @@ startBtn.addEventListener('click', async () => {
         audioChunks.push(event.data);
     };
 
-    recordingTimeout = setTimeout(stopRecording, 30000);
+    recordingTimeout = setTimeout(stopRecording, 20000);
 
     mediaRecorder.onstop = async () => {
         startBtn.disabled = false;
