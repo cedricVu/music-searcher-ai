@@ -5,16 +5,17 @@ const audioPlayback = document.getElementById('audioPlayback');
 const resultUl = document.getElementById('result-ul');
 let recordingTimeout;
 
-let mediaRecorder;
-let audioChunks = [];
+let recorder;
 let audioBlob;
+let gumStream;
 
 function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
+    if (recorder && recorder.recording) {
+        recorder.stop(); // Stop the recording
+        gumStream.getAudioTracks()[0].stop(); // Stop the audio stream
+        clearTimeout(recordingTimeout); // Clear the timeout
+        processRecording(); // Process the recording after stopping
     }
-    // Clear the timeout to prevent it from stopping the recorder again
-    recordingTimeout && clearTimeout(recordingTimeout);
 }
 
 startBtn.addEventListener('click', async () => {
@@ -23,47 +24,50 @@ startBtn.addEventListener('click', async () => {
     startBtn.disabled = true;
     stopBtn.disabled = false;
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    // Get the user's microphone input
+    gumStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const input = audioContext.createMediaStreamSource(gumStream);
 
-    mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-    };
+    recorder = new Recorder(input, { numChannels: 1 });
 
-    recordingTimeout = setTimeout(stopRecording, 20000);
+    recorder.record();
 
-    mediaRecorder.onstop = async () => {
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioPlayback.src = audioUrl;
-        playBtn.disabled = false;
-
-        // Submit the audio to your backend API
-        await submitToBackendAPI(audioBlob);
-        audioChunks = [];
-    };
-
-    mediaRecorder.start();
+    // Automatically stop recording after 20 seconds
+    recordingTimeout = setTimeout(stopRecording, 15000);
 });
 
 stopBtn.addEventListener('click', () => {
-    mediaRecorder.stop();
+    stopRecording();
 });
 
 playBtn.addEventListener('click', () => {
     audioPlayback.play();
 });
 
+function processRecording() {
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+
+    // Export the recording to a Blob
+    recorder.exportWAV(async (blob) => {
+        audioBlob = blob;
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayback.src = audioUrl;
+        playBtn.disabled = false;
+
+        // Submit the audio to your backend API
+        await submitToBackendAPI(audioBlob);
+    });
+}
+
 async function submitToBackendAPI(audioBlob) {
     // Show the loading overlay
     document.getElementById('loadingOverlay').classList.add('active');
 
     try {
-
         // Convert the Blob to a File object with a proper name and type
-        const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
 
         // Prepare the form data
         const formData = new FormData();
