@@ -3,10 +3,19 @@ const stopBtn = document.getElementById('stopBtn');
 const playBtn = document.getElementById('playBtn');
 const audioPlayback = document.getElementById('audioPlayback');
 const resultUl = document.getElementById('result-ul');
+let recordingTimeout;
 
 let mediaRecorder;
 let audioChunks = [];
 let audioBlob;
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+    }
+    // Clear the timeout to prevent it from stopping the recorder again
+    recordingTimeout && clearTimeout(recordingTimeout);
+}
 
 startBtn.addEventListener('click', async () => {
     // Clear old search results
@@ -21,7 +30,11 @@ startBtn.addEventListener('click', async () => {
         audioChunks.push(event.data);
     };
 
+    recordingTimeout = setTimeout(stopRecording, 15000);
+
     mediaRecorder.onstop = async () => {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
         audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
         audioPlayback.src = audioUrl;
@@ -36,8 +49,6 @@ startBtn.addEventListener('click', async () => {
 });
 
 stopBtn.addEventListener('click', () => {
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
     mediaRecorder.stop();
 });
 
