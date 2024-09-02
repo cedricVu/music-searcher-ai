@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Searcher by AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Music Searcher AI</h1>
+    <div class="controls">
+        <button id="startBtn" class="btn">Start Recording</button>
+        <button id="stopBtn" class="btn" disabled>Stop Recording</button>
+        <button id="playBtn" class="btn" disabled>Play Recording</button>
+    </div>
+    <audio id="audioPlayback" controls></audio>
+    <h3>Result</h3>
+    <div id="search-result">
+        <ul id="result-ul">
+        </ul>
+    </div>
+</div>
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
