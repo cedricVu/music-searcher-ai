@@ -59,7 +59,7 @@ async function submitToBackendAPI(audioBlob) {
         formData.append('file', audioFile);
 
         // Send the audio file to the backend API
-        const response = await fetch('http://localhost:8080/api/detect-song', {
+        const response = await fetch('https://api.sformer.tech/api/detect-song', {
             method: 'POST',
             body: formData,
         });
